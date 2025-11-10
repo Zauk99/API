@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,39 +22,41 @@ import java.util.stream.Collectors;
 public class UsuarioService {
     // ⬅️ ¡ESTE ES EL PUNTO CRÍTICO!
 
+    private final PasswordEncoder passwordEncoder;
     private final UsuarioRepository usuarioRepository;
     // Asegúrate de que solo exista esta línea para el repositorio
     // o el campo que necesites.
 
     // ⬅️ EL CONSTRUCTOR DEBE SER LIMPIO
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder; // Correcta inicialización
     }
-    
+
     // ===================================
     // 1. CREATE: Guardar nuevo Usuario (POST)
     // ===================================
-    // Dentro de UsuarioService.java
 
     @Transactional
     public UsuarioDTO guardarUsuario(UsuarioDTO dto) {
-        // 1. **VALIDACIÓN CRÍTICA**
+        
         if (dto.getContrasena() == null || dto.getContrasena().trim().isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "El campo 'contrasena' es obligatorio para crear un usuario.");
         }
 
-        // 2. Convertir y mapear campos
         Usuario usuario = convertirA_Entidad(dto);
 
-        // 3. ⚠️ ASIGNAR CONTRASENA (se asume que la encriptación ocurrirá aquí después)
-        // Actualmente, esto asigna la contraseña de texto plano a contrasenaHash
-        // (¡temporalmente inseguro, pero necesario para funcionar!)
-        usuario.setContrasenaHash(dto.getContrasena());
+        // 🟢 Cifrar la contraseña
+        // Primero, asegurémonos de que la contraseña del DTO se pase a la entidad
+        usuario.setContrasenaHash(dto.getContrasena()); 
+        
+        // Ciframos el hash (que ahora contiene la contraseña de texto plano)
+        String contrasenaCifrada = passwordEncoder.encode(usuario.getContrasenaHash());
+        usuario.setContrasenaHash(contrasenaCifrada); // Guardamos el hash real
 
         Usuario guardado = usuarioRepository.save(usuario);
-        // Nota: La contraseña en el DTO se pierde aquí, lo cual es correcto.
         return convertirA_DTO(guardado);
     }
 
