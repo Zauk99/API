@@ -29,11 +29,7 @@ public class UsuarioService {
     public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
-
-    // ===================================
-    // 1. CREATE: Guardar nuevo Usuario (POST)
-    // ... el resto de tu código ya está bien
-
+    
     // ===================================
     // 1. CREATE: Guardar nuevo Usuario (POST)
     // ===================================
