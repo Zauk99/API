@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 public class UsuarioService {
     // ⬅️ ¡ESTE ES EL PUNTO CRÍTICO!
 
-    private final PasswordEncoder passwordEncoder;
     private final UsuarioRepository usuarioRepository;
     // Asegúrate de que solo exista esta línea para el repositorio
     // o el campo que necesites.
@@ -30,7 +29,6 @@ public class UsuarioService {
     // ⬅️ EL CONSTRUCTOR DEBE SER LIMPIO
     public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
-        this.passwordEncoder = passwordEncoder; // Correcta inicialización
     }
 
     // ===================================
@@ -51,10 +49,6 @@ public class UsuarioService {
         // 🟢 Cifrar la contraseña
         // Primero, asegurémonos de que la contraseña del DTO se pase a la entidad
         usuario.setContrasenaHash(dto.getContrasena()); 
-        
-        // Ciframos el hash (que ahora contiene la contraseña de texto plano)
-        String contrasenaCifrada = passwordEncoder.encode(usuario.getContrasenaHash());
-        usuario.setContrasenaHash(contrasenaCifrada); // Guardamos el hash real
 
         Usuario guardado = usuarioRepository.save(usuario);
         return convertirA_DTO(guardado);
