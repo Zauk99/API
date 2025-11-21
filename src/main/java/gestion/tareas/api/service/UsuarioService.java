@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,14 +19,13 @@ import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
-    // ⬅️ ¡ESTE ES EL PUNTO CRÍTICO!
 
+    // 1. ✅ Ya no se necesita el PasswordEncoder como campo
     private final UsuarioRepository usuarioRepository;
-    // Asegúrate de que solo exista esta línea para el repositorio
-    // o el campo que necesites.
 
-    // ⬅️ EL CONSTRUCTOR DEBE SER LIMPIO
-    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    // 2. ✅ El constructor solo inyecta el repositorio
+    // ❌ Antes: public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
@@ -37,22 +35,24 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDTO guardarUsuario(UsuarioDTO dto) {
-        
+       
         if (dto.getContrasena() == null || dto.getContrasena().trim().isEmpty()) {
             throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "El campo 'contrasena' es obligatorio para crear un usuario.");
+                        HttpStatus.BAD_REQUEST,
+                        "El campo 'contrasena' es obligatorio para crear un usuario.");
         }
 
         Usuario usuario = convertirA_Entidad(dto);
 
-        // 🟢 Cifrar la contraseña
-        // Primero, asegurémonos de que la contraseña del DTO se pase a la entidad
-        usuario.setContrasenaHash(dto.getContrasena()); 
+        // 3. ✅ Guardamos la contraseña directamente en texto plano (sin cifrar)
+        usuario.setContrasenaHash(dto.getContrasena());
+
+        // ❌ ELIMINAMOS TODA LÍNEA DE CIFRADO AQUÍ
 
         Usuario guardado = usuarioRepository.save(usuario);
         return convertirA_DTO(guardado);
     }
+
 
     // ===================================
     // 2. READ ALL: Obtener todos los Usuarios (GET /api/usuarios)

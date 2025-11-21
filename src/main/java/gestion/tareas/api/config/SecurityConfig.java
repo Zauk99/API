@@ -1,43 +1,53 @@
-package gestion.tareas.api.config; // ⬅️ Asegúrate que coincida con tu estructura
+package gestion.tareas.api.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
+// ❌ ELIMINAMOS: import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+// ❌ ELIMINAMOS: import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 
 @Configuration
-public class SecurityConfig { 
-    
+public class SecurityConfig {
+   
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Deshabilita CSRF (ya lo tienes)
-            .csrf(csrf -> csrf.disable()) 
-            
-            // 🟢 AÑADE: Deshabilita la gestión de sesiones por defecto (Stateless)
-            // Esto es CRUCIAL para una API REST
+            // 1. Deshabilita CSRF (Esencial para API REST)
+            .csrf(csrf -> csrf.disable())
+           
+            // 2. Deshabilita la gestión de sesiones (Stateless)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            
-            // 🟢 AÑADE: Deshabilita la autenticación de formularios por defecto
+           
+            // 3. Deshabilita la autenticación de formularios y básica por defecto
             .formLogin(AbstractHttpConfigurer::disable)
-            
-            // 🟢 AÑADE: Deshabilita la autenticación básica HTTP por defecto
             .httpBasic(AbstractHttpConfigurer::disable)
-            
-            // 2. Configura las autorizaciones de las solicitudes
+           
+            // 4. Configura las autorizaciones
             .authorizeHttpRequests(authorize -> authorize
-                // Mantén el acceso libre a TODAS las rutas que empiezan con /api/
+                // ✅ Permite acceso libre a todas las rutas que empiezan con /api/ (Incluye el registro)
                 .requestMatchers("/api/**").permitAll()
-                
-                // ... (otras reglas)
-                
-                // 3. Cualquier otra solicitud DEBE estar autenticada
+               
+                // Permite acceso libre a recursos estáticos
+                .requestMatchers("/", "/dashboard", "/css/**", "/js/**", "/img/**").permitAll()
+               
+                // Cualquier otra solicitud DEBE estar autenticada
                 .anyRequest().authenticated()
             );
 
         return http.build();
     }
-    // ... (PasswordEncoder bean)
+
+    // ❌ ELIMINAMOS el bean de PasswordEncoder
+
+    /*
+    // Si necesitas volver a usar un PasswordEncoder que no sea bcrypt (por ejemplo, NoOpPasswordEncoder)
+    // tendrías que definir el bean aquí y volver a inyectarlo en el servicio.
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return NoOpPasswordEncoder.getInstance(); // Requiere contraseña en DB con prefijo {noop}
+    }
+    */
 }
