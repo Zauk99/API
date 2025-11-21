@@ -43,6 +43,7 @@ public class AsignacionService {
             .collect(Collectors.toList());
         }
 
+    @SuppressWarnings("null")
     public AsignacionDTO guardarAsignacion(AsignacionDTO dto) {
         Asignacion asignacion = new Asignacion();
 
@@ -64,6 +65,7 @@ public class AsignacionService {
     // 3. READ ONE: Obtener por ID (GET /api/asignaciones/{id})
     // ===================================
     public AsignacionDTO obtenerAsignacionPorId(Long id) {
+        @SuppressWarnings("null")
         Asignacion asignacion = asignacionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Asignación no encontrada con ID: " + id));
         return convertirA_DTO(asignacion);
@@ -77,12 +79,14 @@ public class AsignacionService {
     // ===================================
     @Transactional
     public AsignacionDTO actualizarAsignacion(Long id, AsignacionDTO dto) {
+        @SuppressWarnings("null")
         Asignacion asignacionExistente = asignacionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Asignación no encontrada con ID: " + id));
 
         // Aquí iría la lógica para actualizar campos editables de Asignacion.
         // Ej: asignacionExistente.setEstado(dto.getEstado());
 
+        @SuppressWarnings("null")
         Asignacion asignacionActualizada = asignacionRepository.save(asignacionExistente);
         return convertirA_DTO(asignacionActualizada);
     }
@@ -90,6 +94,7 @@ public class AsignacionService {
     // ===================================
     // 5. DELETE: Eliminar por ID (DELETE /api/asignaciones/{id})
     // ===================================
+    @SuppressWarnings("null")
     @Transactional
     public void eliminarAsignacion(Long id) {
         if (!asignacionRepository.existsById(id)) {

@@ -37,6 +37,7 @@ public class ComentarioService {
     // --- Lógica POST (Guardar) ---
     public ComentarioDTO guardarComentario(ComentarioDTO dto) {
         Comentario comentario = convertirA_Entidad(dto);
+        @SuppressWarnings("null")
         Comentario guardado = comentarioRepository.save(comentario);
         return convertirA_DTO(guardado);
     }
@@ -45,6 +46,7 @@ public class ComentarioService {
     // 3. READ ONE: Obtener por ID (GET /api/comentarios/{id})
     // ===================================
     public ComentarioDTO obtenerComentarioPorId(Long id) {
+        @SuppressWarnings("null")
         Comentario comentario = comentarioRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Comentario no encontrado con ID: " + id));
         return convertirA_DTO(comentario);
@@ -57,6 +59,7 @@ public class ComentarioService {
     @Transactional
     public ComentarioDTO actualizarComentario(Long id, ComentarioDTO dto) {
         // 1. Buscar la entidad existente
+        @SuppressWarnings("null")
         Comentario comentarioExistente = comentarioRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Comentario no encontrado con ID: " + id));
 
@@ -66,6 +69,7 @@ public class ComentarioService {
         }
 
         // 3. Guardar y devolver DTO
+        @SuppressWarnings("null")
         Comentario comentarioActualizado = comentarioRepository.save(comentarioExistente);
         return convertirA_DTO(comentarioActualizado);
     }
@@ -73,6 +77,7 @@ public class ComentarioService {
     // ===================================
     // 5. DELETE: Eliminar por ID (DELETE /api/comentarios/{id})
     // ===================================
+    @SuppressWarnings("null")
     @Transactional
     public void eliminarComentario(Long id) {
         if (!comentarioRepository.existsById(id)) {
@@ -100,6 +105,7 @@ public class ComentarioService {
 
     // Dentro de ComentarioService.java
 
+    @SuppressWarnings("null")
     private Comentario convertirA_Entidad(ComentarioDTO dto) {
         Comentario comentario = new Comentario();
 

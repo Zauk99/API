@@ -29,6 +29,7 @@ public class TareaService {
     @Transactional
     public TareaDTO guardarTarea(TareaDTO dto) {
         Tarea tarea = convertirA_Entidad(dto);
+        @SuppressWarnings("null")
         Tarea guardada = tareaRepository.save(tarea);
         return convertirA_DTO(guardada);
     }
@@ -42,6 +43,7 @@ public class TareaService {
     
     // --- 3. READ: Obtener Tarea por ID (GET /api/tareas/{id}) ---
     public TareaDTO obtenerTareaPorId(Long id) {
+        @SuppressWarnings("null")
         Tarea tarea = tareaRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND, 
@@ -55,6 +57,7 @@ public class TareaService {
     @Transactional
     public TareaDTO actualizarTarea(Long id, TareaDTO dto) {
         // 1. Buscar la tarea existente (lanzará 404 si no existe)
+        @SuppressWarnings("null")
         Tarea tareaExistente = tareaRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND, 
@@ -71,6 +74,7 @@ public class TareaService {
 
         // 3. Opcional: Actualizar la clave foránea del proyecto si se proporciona
         if (dto.getIdProyecto() != null && !dto.getIdProyecto().equals(tareaExistente.getProyecto().getIdProyecto())) {
+            @SuppressWarnings("null")
             Proyecto nuevoProyecto = proyectoRepository.findById(dto.getIdProyecto())
                 .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, 
@@ -85,6 +89,7 @@ public class TareaService {
     }
 
     // --- 5. DELETE: Eliminar Tarea (DELETE /api/tareas/{id}) ---
+    @SuppressWarnings("null")
     @Transactional
     public void eliminarTarea(Long id) {
         // Opcional: Verificar existencia antes de eliminar para devolver 404
@@ -137,6 +142,7 @@ public class TareaService {
             );
         }
         
+        @SuppressWarnings("null")
         Proyecto proyecto = proyectoRepository.findById(dto.getIdProyecto())
             .orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.BAD_REQUEST, 

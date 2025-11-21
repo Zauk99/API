@@ -31,6 +31,7 @@ public class ProyectoService {
     // --- Lógica POST (Guardar) ---
     public ProyectoDTO guardarProyecto(ProyectoDTO proyectoDTO) {
         Proyecto nuevoProyecto = convertirA_Entidad(proyectoDTO);
+        @SuppressWarnings("null")
         Proyecto proyectoGuardado = proyectoRepository.save(nuevoProyecto);
         return convertirA_DTO(proyectoGuardado);
     }
@@ -39,6 +40,7 @@ public class ProyectoService {
     // 3. READ ONE: Obtener por ID (GET /api/proyectos/{id})
     // ===================================
     public ProyectoDTO obtenerProyectoPorId(Long id) {
+        @SuppressWarnings("null")
         Proyecto proyecto = proyectoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Proyecto no encontrado con ID: " + id));
         return convertirA_DTO(proyecto);
@@ -50,6 +52,7 @@ public class ProyectoService {
     @Transactional
     public ProyectoDTO actualizarProyecto(Long id, ProyectoDTO dto) {
         // 1. Buscar la entidad existente
+        @SuppressWarnings("null")
         Proyecto proyectoExistente = proyectoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Proyecto no encontrado con ID: " + id));
 
@@ -65,6 +68,7 @@ public class ProyectoService {
         // (Otros campos como fechaCreacion no se actualizan)
 
         // 3. Guardar (save() actualizará la entidad existente gracias al ID)
+        @SuppressWarnings("null")
         Proyecto proyectoActualizado = proyectoRepository.save(proyectoExistente);
 
         // 4. Devolver el DTO del resultado
@@ -74,6 +78,7 @@ public class ProyectoService {
     // ===================================
     // 5. DELETE: Eliminar por ID (DELETE /api/proyectos/{id})
     // ===================================
+    @SuppressWarnings("null")
     @Transactional
     public void eliminarProyecto(Long id) {
         if (!proyectoRepository.existsById(id)) {

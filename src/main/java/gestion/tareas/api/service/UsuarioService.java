@@ -67,6 +67,7 @@ public class UsuarioService {
     // 3. READ BY ID: Obtener Usuario por ID (GET /api/usuarios/{id})
     // ===================================
     public UsuarioDTO obtenerUsuarioPorId(Long id) {
+        @SuppressWarnings("null")
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -82,6 +83,7 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDTO actualizarUsuario(Long id, UsuarioDTO dto) {
+        @SuppressWarnings("null")
         Usuario usuarioExistente = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -107,6 +109,7 @@ public class UsuarioService {
 
         // La contraseña NO se actualiza aquí, es un proceso separado
 
+        @SuppressWarnings("null")
         Usuario actualizado = usuarioRepository.save(usuarioExistente);
         return convertirA_DTO(actualizado);
     }
@@ -114,6 +117,7 @@ public class UsuarioService {
     // ===================================
     // 5. DELETE: Eliminar Usuario (DELETE /api/usuarios/{id})
     // ===================================
+    @SuppressWarnings("null")
     @Transactional
     public void eliminarUsuario(Long id) {
         if (!usuarioRepository.existsById(id)) {
