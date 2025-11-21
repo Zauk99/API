@@ -14,7 +14,7 @@ services:
       - pgdata:/var/lib/postgresql/data
   app:
     build:
-      context: ../api
+      context: .
     container_name: api-java
     depends_on:
       - db
