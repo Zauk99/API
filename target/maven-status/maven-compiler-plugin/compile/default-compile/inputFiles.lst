@@ -7,6 +7,8 @@ C:\Users\Pablo Herrera\Downloads\api\src\main\java\gestion\tareas\api\controller
 C:\Users\Pablo Herrera\Downloads\api\src\main\java\gestion\tareas\api\controller\UsuarioController.java
 C:\Users\Pablo Herrera\Downloads\api\src\main\java\gestion\tareas\api\dto\AsignacionDTO.java
 C:\Users\Pablo Herrera\Downloads\api\src\main\java\gestion\tareas\api\dto\ComentarioDTO.java
+C:\Users\Pablo Herrera\Downloads\api\src\main\java\gestion\tareas\api\dto\ContrasenaUpdateDTO.java
+C:\Users\Pablo Herrera\Downloads\api\src\main\java\gestion\tareas\api\dto\LoginRequestDTO.java
 C:\Users\Pablo Herrera\Downloads\api\src\main\java\gestion\tareas\api\dto\ProyectoDTO.java
 C:\Users\Pablo Herrera\Downloads\api\src\main\java\gestion\tareas\api\dto\TareaDTO.java
 C:\Users\Pablo Herrera\Downloads\api\src\main\java\gestion\tareas\api\dto\UsuarioDTO.java

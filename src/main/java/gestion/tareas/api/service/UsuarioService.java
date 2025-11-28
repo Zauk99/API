@@ -3,7 +3,7 @@ package gestion.tareas.api.service;
 import gestion.tareas.api.dto.UsuarioDTO;
 import gestion.tareas.api.entity.Usuario;
 import gestion.tareas.api.repository.UsuarioRepository;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,11 +22,14 @@ public class UsuarioService {
 
     // 1. ✅ Ya no se necesita el PasswordEncoder como campo
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // 2. ✅ El constructor solo inyecta el repositorio
-    // ❌ Antes: public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    // ❌ Antes: public UsuarioService(UsuarioRepository usuarioRepository,
+    // PasswordEncoder passwordEncoder) {
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // ===================================
@@ -35,24 +38,36 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDTO guardarUsuario(UsuarioDTO dto) {
-       
+
         if (dto.getContrasena() == null || dto.getContrasena().trim().isEmpty()) {
             throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "El campo 'contrasena' es obligatorio para crear un usuario.");
+                    HttpStatus.BAD_REQUEST,
+                    "El campo 'contrasena' es obligatorio para crear un usuario.");
         }
 
         Usuario usuario = convertirA_Entidad(dto);
 
-        // 3. ✅ Guardamos la contraseña directamente en texto plano (sin cifrar)
-        usuario.setContrasenaHash(dto.getContrasena());
-
-        // ❌ ELIMINAMOS TODA LÍNEA DE CIFRADO AQUÍ
+        // 🟢 CORRECCIÓN DE SEGURIDAD: Cifrar la contraseña antes de guardarla
+        String contrasenaCifrada = passwordEncoder.encode(dto.getContrasena());
+        usuario.setContrasenaHash(contrasenaCifrada);
 
         Usuario guardado = usuarioRepository.save(usuario);
         return convertirA_DTO(guardado);
     }
 
+    public Long validarCredenciales(String email, String contrasena) {
+        Usuario usuario = usuarioRepository.findByEmail(email);
+
+        if (usuario == null) {
+            return null;
+        }
+
+        if (this.passwordEncoder.matches(contrasena, usuario.getContrasenaHash())) {
+            return usuario.getIdUsuario();
+        } else {
+            return null;
+        }
+    }
 
     // ===================================
     // 2. READ ALL: Obtener todos los Usuarios (GET /api/usuarios)
@@ -114,6 +129,15 @@ public class UsuarioService {
         return convertirA_DTO(actualizado);
     }
 
+    public UsuarioDTO obtenerUsuarioPorEmail(String email) {
+        // ❗ Lógica de negocio (ej: validaciones) antes de consultar la BBDD.
+
+        // ❗ LLamada al Repositorio
+        Usuario entidad = usuarioRepository.findByEmail(email); // <-- Necesita existir en el Repository
+
+        return convertirA_DTO(entidad); // Debes convertir la Entidad a DTO
+    }
+
     // ===================================
     // 5. DELETE: Eliminar Usuario (DELETE /api/usuarios/{id})
     // ===================================
@@ -161,5 +185,23 @@ public class UsuarioService {
         // usuario.setContrasenaHash(dto.getContrasena()); // Esto debería ser un hash
 
         return usuario;
+    }
+
+    // En UsuarioService.java (API 8080)
+
+    @Transactional
+    public void actualizarContrasena(Long id, String nuevaContrasena) {
+        Usuario usuarioExistente = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuario no encontrado para actualizar con ID: " + id));
+
+        // 1. Cifrar la nueva contraseña
+        String contrasenaCifrada = passwordEncoder.encode(nuevaContrasena);
+
+        // 2. Guardar el hash en la entidad
+        usuarioExistente.setContrasenaHash(contrasenaCifrada);
+
+        usuarioRepository.save(usuarioExistente);
     }
 }

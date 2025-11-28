@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     // Aquí puedes añadir métodos de búsqueda personalizados,
     // por ejemplo: Usuario findByEmail(String email);
+    // Spring Data JPA automáticamente implementará este método:
+    Usuario findByEmail(String email);
 }

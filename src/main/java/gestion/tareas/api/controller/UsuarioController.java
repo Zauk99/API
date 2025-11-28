@@ -2,7 +2,8 @@ package gestion.tareas.api.controller;
 
 import gestion.tareas.api.dto.UsuarioDTO;
 import gestion.tareas.api.service.UsuarioService;
-
+import gestion.tareas.api.dto.ContrasenaUpdateDTO;
+import gestion.tareas.api.dto.LoginRequestDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,22 @@ public class UsuarioController {
         List<UsuarioDTO> usuarios = usuarioService.obtenerTodosLosUsuarios();
         return ResponseEntity.ok(usuarios);
     }
-    
+
+    // ===================================
+    // Nuevo método para buscar por email
+    // ===================================
+    @GetMapping("/buscar-email")
+    public ResponseEntity<UsuarioDTO> obtenerUsuarioPorEmail(@RequestParam String email) {
+        // ❗ Implementación crítica: Tu UsuarioService debe tener este método.
+        UsuarioDTO usuario = usuarioService.obtenerUsuarioPorEmail(email);
+
+        if (usuario != null) {
+            return ResponseEntity.ok(usuario);
+        } else {
+            return ResponseEntity.notFound().build(); // 404 si no existe
+        }
+    }
+
     // ===================================
     // 3. READ BY ID (GET /id) - Nuevo
     // ===================================
@@ -62,5 +78,36 @@ public class UsuarioController {
     public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
         usuarioService.eliminarUsuario(id);
         return ResponseEntity.noContent().build(); // 204 No Content
+    }
+
+    // ===================================
+    // 6. LOGIN (POST /login) - CRÍTICO
+    // ===================================
+    @PostMapping("/login")
+    public ResponseEntity<Long> login(@RequestBody LoginRequestDTO credenciales) {
+
+        // 1. Llama al servicio para validar las credenciales
+        Long userId = usuarioService.validarCredenciales(
+                credenciales.getEmail(),
+                credenciales.getContrasena());
+
+        if (userId != null) {
+            // 🟢 Éxito: Devuelve 200 OK y el ID del usuario
+            return ResponseEntity.ok(userId);
+        } else {
+            // 🔴 Falla: Devuelve 401 Unauthorized para indicar credenciales inválidas
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    // En UsuarioController.java (API 8080)
+    // ===================================
+    // 6. UPDATE PASSWORD (PATCH /id/contrasena)
+    // ===================================
+    @PutMapping("/{id}/contrasena") // O @PutMapping
+    public ResponseEntity<Void> actualizarContrasena(@PathVariable Long id,
+            @RequestBody ContrasenaUpdateDTO dto) {
+        usuarioService.actualizarContrasena(id, dto.getContrasena());
+        return ResponseEntity.ok().build(); // 200 OK
     }
 }

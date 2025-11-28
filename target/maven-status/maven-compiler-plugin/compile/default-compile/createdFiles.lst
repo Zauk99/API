@@ -3,6 +3,7 @@ gestion\tareas\api\controller\ComentarioController.class
 gestion\tareas\api\ApiApplication.class
 gestion\tareas\api\controller\ProyectoController.class
 gestion\tareas\api\entity\RolUsuario.class
+gestion\tareas\api\dto\LoginRequestDTO.class
 gestion\tareas\api\dto\ProyectoDTO.class
 gestion\tareas\api\dto\UsuarioDTO.class
 gestion\tareas\api\service\UsuarioService.class
@@ -17,6 +18,7 @@ gestion\tareas\api\dto\TareaDTO.class
 gestion\tareas\api\entity\Asignacion.class
 gestion\tareas\api\entity\Proyecto.class
 gestion\tareas\api\service\TareaService.class
+gestion\tareas\api\dto\ContrasenaUpdateDTO.class
 gestion\tareas\api\repository\UsuarioRepository.class
 gestion\tareas\api\repository\ProyectoRepository.class
 gestion\tareas\api\dto\AsignacionDTO.class
