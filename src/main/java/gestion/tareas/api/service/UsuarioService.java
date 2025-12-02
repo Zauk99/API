@@ -12,21 +12,12 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// Asumo que tienes una clase para el hashing de contraseñas (BCryptPasswordEncoder, por ejemplo)
-// import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; 
-
-// UsuarioService.java
-
 @Service
 public class UsuarioService {
 
-    // 1. ✅ Ya no se necesita el PasswordEncoder como campo
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // 2. ✅ El constructor solo inyecta el repositorio
-    // ❌ Antes: public UsuarioService(UsuarioRepository usuarioRepository,
-    // PasswordEncoder passwordEncoder) {
     public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
@@ -47,7 +38,7 @@ public class UsuarioService {
 
         Usuario usuario = convertirA_Entidad(dto);
 
-        // 🟢 CORRECCIÓN DE SEGURIDAD: Cifrar la contraseña antes de guardarla
+        // Cifrar la contraseña antes de guardarla
         String contrasenaCifrada = passwordEncoder.encode(dto.getContrasena());
         usuario.setContrasenaHash(contrasenaCifrada);
 
@@ -55,6 +46,9 @@ public class UsuarioService {
         return convertirA_DTO(guardado);
     }
 
+    // ===================================
+    // Método de soporte para el login interno del API (No usado por el Cliente 8081)
+    // ===================================
     public Long validarCredenciales(String email, String contrasena) {
         Usuario usuario = usuarioRepository.findByEmail(email);
 
@@ -68,6 +62,29 @@ public class UsuarioService {
             return null;
         }
     }
+    
+    // ===================================
+    // 🛑 4. READ: Obtener Usuario por Email (CRÍTICO PARA EL LOGIN DEL CLIENTE 8081)
+    // Este método devuelve el DTO CON el hash de la contraseña.
+    // ===================================
+    public UsuarioDTO obtenerUsuarioPorEmail(String email) {
+        // Llama al Repositorio para obtener la entidad completa
+        Usuario entidad = usuarioRepository.findByEmail(email); 
+
+        if (entidad == null) {
+            return null; // Usuario no encontrado
+        }
+        
+        // Creamos el DTO usando el mapeo estándar para todos los campos excepto el hash
+        UsuarioDTO dtoParaLogin = convertirA_DTO(entidad);
+        
+        // 🛑 CRÍTICO: Añadir el hash de la contraseña al DTO que se enviará al Cliente (8081).
+        // El Cliente (8081) lo necesita para hacer la validación BCrypt.
+        dtoParaLogin.setContrasena(entidad.getContrasenaHash()); 
+        
+        return dtoParaLogin; // Devolvemos el DTO CON el hash
+    }
+
 
     // ===================================
     // 2. READ ALL: Obtener todos los Usuarios (GET /api/usuarios)
@@ -92,10 +109,8 @@ public class UsuarioService {
     }
 
     // ===================================
-    // 4. UPDATE: Actualizar Usuario (PUT /api/usuarios/{id})
+    // 5. UPDATE: Actualizar Usuario (PUT /api/usuarios/{id})
     // ===================================
-    // Dentro de UsuarioService.java
-
     @Transactional
     public UsuarioDTO actualizarUsuario(Long id, UsuarioDTO dto) {
         @SuppressWarnings("null")
@@ -104,13 +119,11 @@ public class UsuarioService {
                         HttpStatus.NOT_FOUND,
                         "Usuario no encontrado para actualizar con ID: " + id));
 
-        // Aplicar solo los cambios, ignorando los campos nulos del DTO
-
         if (dto.getNombreCompleto() != null) {
             usuarioExistente.setNombreCompleto(dto.getNombreCompleto());
         }
 
-        if (dto.getEmail() != null) { // ⬅️ CRÍTICO: SOLO actualiza si viene en el DTO
+        if (dto.getEmail() != null) { 
             usuarioExistente.setEmail(dto.getEmail());
         }
 
@@ -122,24 +135,13 @@ public class UsuarioService {
             usuarioExistente.setRol(dto.getRol());
         }
 
-        // La contraseña NO se actualiza aquí, es un proceso separado
-
         @SuppressWarnings("null")
         Usuario actualizado = usuarioRepository.save(usuarioExistente);
         return convertirA_DTO(actualizado);
     }
 
-    public UsuarioDTO obtenerUsuarioPorEmail(String email) {
-        // ❗ Lógica de negocio (ej: validaciones) antes de consultar la BBDD.
-
-        // ❗ LLamada al Repositorio
-        Usuario entidad = usuarioRepository.findByEmail(email); // <-- Necesita existir en el Repository
-
-        return convertirA_DTO(entidad); // Debes convertir la Entidad a DTO
-    }
-
     // ===================================
-    // 5. DELETE: Eliminar Usuario (DELETE /api/usuarios/{id})
+    // 6. DELETE: Eliminar Usuario (DELETE /api/usuarios/{id})
     // ===================================
     @SuppressWarnings("null")
     @Transactional
@@ -149,46 +151,12 @@ public class UsuarioService {
                     HttpStatus.NOT_FOUND,
                     "Usuario no encontrado para eliminar con ID: " + id);
         }
-        // ⚠️ Nota: Si este usuario tiene tareas o comentarios asociados,
-        // esto podría fallar debido a restricciones de clave foránea.
         usuarioRepository.deleteById(id);
     }
-
+    
     // ===================================
-    // MAPPERS (Convertidores)
+    // 7. UPDATE PASSWORD (PATCH /id/contrasena)
     // ===================================
-
-    // Asumo que estos métodos están implementados en tu clase.
-    // Solo un ejemplo para que se compile:
-    private UsuarioDTO convertirA_DTO(Usuario usuario) {
-        UsuarioDTO dto = new UsuarioDTO();
-        dto.setId(usuario.getIdUsuario());
-        dto.setNombreCompleto(usuario.getNombreCompleto());
-        dto.setEmail(usuario.getEmail());
-        dto.setTelefono(usuario.getTelefono());
-        dto.setRol(usuario.getRol());
-        // NO incluyas el ContrasenaHash en el DTO por seguridad.
-        return dto;
-    }
-
-    // Dentro de UsuarioService.java
-
-    private Usuario convertirA_Entidad(UsuarioDTO dto) {
-        Usuario usuario = new Usuario();
-
-        usuario.setNombreCompleto(dto.getNombreCompleto());
-        usuario.setEmail(dto.getEmail());
-        usuario.setTelefono(dto.getTelefono());
-        usuario.setRol(dto.getRol());
-
-        // ❌ ELIMINA ESTA LÍNEA DE COMENTARIO:
-        // usuario.setContrasenaHash(dto.getContrasena()); // Esto debería ser un hash
-
-        return usuario;
-    }
-
-    // En UsuarioService.java (API 8080)
-
     @Transactional
     public void actualizarContrasena(Long id, String nuevaContrasena) {
         Usuario usuarioExistente = usuarioRepository.findById(id)
@@ -203,5 +171,35 @@ public class UsuarioService {
         usuarioExistente.setContrasenaHash(contrasenaCifrada);
 
         usuarioRepository.save(usuarioExistente);
+    }
+
+    // ===================================
+    // MAPPERS (Convertidores)
+    // ===================================
+
+    // Convierte la Entidad a DTO. Por seguridad, no incluye el hash de la contraseña.
+    private UsuarioDTO convertirA_DTO(Usuario usuario) {
+        UsuarioDTO dto = new UsuarioDTO();
+        dto.setId(usuario.getIdUsuario()); // Asumo que el campo es getIdUsuario()
+        dto.setNombreCompleto(usuario.getNombreCompleto());
+        dto.setEmail(usuario.getEmail());
+        dto.setTelefono(usuario.getTelefono());
+        dto.setRol(usuario.getRol());
+        // NO se incluye el hash aquí para operaciones generales.
+        return dto;
+    }
+
+    // Convierte el DTO a Entidad (usado en POST/PUT)
+    private Usuario convertirA_Entidad(UsuarioDTO dto) {
+        Usuario usuario = new Usuario();
+
+        usuario.setNombreCompleto(dto.getNombreCompleto());
+        usuario.setEmail(dto.getEmail());
+        usuario.setTelefono(dto.getTelefono());
+        usuario.setRol(dto.getRol());
+        
+        // Nota: La contraseña se cifra y se setea por separado en guardarUsuario().
+        
+        return usuario;
     }
 }
